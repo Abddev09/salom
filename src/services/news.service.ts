@@ -22,18 +22,15 @@ export const cleanHtmlForTelegram = (rawHtml: string): string => {
       h4: 'b',
       h5: 'b',
       h6: 'b',
-      p: () => ({
-  tagName: 'span',
-  attribs: {},
-  text: '\n\n',
-})
-
+      p: 'span', // faqat span qilamiz, text yo‘qotilmaydi
     },
     textFilter: (text) => {
       return text
-        .replace(/<br\s*\/?>/gi, '\n')  // HTMLdagi <br> ni \n ga almashtir
-        .replace(/ +/g, ' ')            // ortiqcha probellarni tozalash
-        .replace(/\n{3,}/g, '\n\n')     // ortiqcha qatorlarni 2 ga qisqartirish
+        .replace(/&nbsp;/g, '\n\n')         // ✅ &nbsp ni \n\n ga aylantirish
+        .replace(/<br\s*\/?>/gi, '\n')      // <br> ni ham \n ga
+        .replace(/ +/g, ' ')                // ortiqcha probellarni tozalash
+        .replace(/\n{3,}/g, '\n\n')         // 3+ qatorni 2 taga qisqartirish
+        .trim()                             // bosh va oxiridagi bo‘sh joyni olib tashlash
     }
   })
 }
