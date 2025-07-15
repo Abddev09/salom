@@ -31,32 +31,50 @@ export const createNewsService = async (content: string, image?: string) => {
   const news = await News.create({ content, image })
 
   const messageText = `${news.content}`
-  const sentChatIds = new Set<number>() // 🔑 faqat unikal chatId lar
+  const sentChatIds = new Set<number>()
+
+  if (messageText.length > 1024) {
+    return {
+      success: false,
+      error: "Message caption uzunligi 1024 ta belgidan oshmasligi kerak (Telegram limit). Iltimos, qisqartiring.",
+    }
+  }
 
   try {
     const users = await User.findAll()
 
     for (const user of users) {
       const chatId = Number(user.chatId)
-      if (!chatId || sentChatIds.has(chatId)) continue // ❗ agar oldin yuborilgan bo‘lsa, o'tkazib yubor
+      if (!chatId || sentChatIds.has(chatId)) continue
 
-      sentChatIds.add(chatId) // ✅ keyin qo‘shib qo‘y
+      sentChatIds.add(chatId)
+
       if (news.image) {
         const imagePath = path.join(uploadsDir, news.image)
-if (fs.existsSync(imagePath)) {
-  await bot.sendPhoto(chatId, fs.createReadStream(imagePath), {
-    caption: cleanHtmlForTelegram(messageText),
-    parse_mode: "HTML",
-  })
-}
-
+        if (fs.existsSync(imagePath)) {
+          await bot.sendPhoto(chatId, fs.createReadStream(imagePath), {
+            caption: cleanHtmlForTelegram(messageText),
+            parse_mode: "HTML",
+          })
+        }
+      } else {
+        await bot.sendMessage(chatId, cleanHtmlForTelegram(messageText), {
+          parse_mode: "HTML",
+        })
       }
     }
   } catch (err) {
-    console.error('❌ Telegramga yuborishda xatolik:', err)
+    console.error("❌ Telegramga yuborishda xatolik:", err)
+    return {
+      success: false,
+      error: "Telegramga yuborishda xatolik yuz berdi.",
+    }
   }
 
-  return news
+  return {
+    success: true,
+    data: news,
+  }
 }
 
 export const getAllNewsService = async () => {

@@ -43,14 +43,20 @@ exports.cleanHtmlForTelegram = cleanHtmlForTelegram;
 const createNewsService = (content, image) => __awaiter(void 0, void 0, void 0, function* () {
     const news = yield news_model_1.News.create({ content, image });
     const messageText = `${news.content}`;
-    const sentChatIds = new Set(); // 🔑 faqat unikal chatId lar
+    const sentChatIds = new Set();
+    if (messageText.length > 1024) {
+        return {
+            success: false,
+            error: "Message caption uzunligi 1024 ta belgidan oshmasligi kerak (Telegram limit). Iltimos, qisqartiring.",
+        };
+    }
     try {
         const users = yield models_1.User.findAll();
         for (const user of users) {
             const chatId = Number(user.chatId);
             if (!chatId || sentChatIds.has(chatId))
-                continue; // ❗ agar oldin yuborilgan bo‘lsa, o'tkazib yubor
-            sentChatIds.add(chatId); // ✅ keyin qo‘shib qo‘y
+                continue;
+            sentChatIds.add(chatId);
             if (news.image) {
                 const imagePath = path_1.default.join(uploadsDir, news.image);
                 if (fs_1.default.existsSync(imagePath)) {
@@ -60,12 +66,24 @@ const createNewsService = (content, image) => __awaiter(void 0, void 0, void 0, 
                     });
                 }
             }
+            else {
+                yield bot_1.default.sendMessage(chatId, (0, exports.cleanHtmlForTelegram)(messageText), {
+                    parse_mode: "HTML",
+                });
+            }
         }
     }
     catch (err) {
-        console.error('❌ Telegramga yuborishda xatolik:', err);
+        console.error("❌ Telegramga yuborishda xatolik:", err);
+        return {
+            success: false,
+            error: "Telegramga yuborishda xatolik yuz berdi.",
+        };
     }
-    return news;
+    return {
+        success: true,
+        data: news,
+    };
 });
 exports.createNewsService = createNewsService;
 const getAllNewsService = () => __awaiter(void 0, void 0, void 0, function* () {
