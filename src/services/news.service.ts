@@ -25,7 +25,7 @@ export const createNewsService = async (content: string, image?: string) => {
       if (news.image) {
         const imagePath = path.join(uploadsDir, news.image)
         if (fs.existsSync(imagePath)) {
-          await bot.sendPhoto(chatId, imagePath, { caption: messageText })
+          await bot.sendPhoto(chatId, imagePath, { caption: messageText , parse_mode: "HTML", })
           console.log(`✅ Telegramga yuborildi: ${chatId}`)
         }
       }
