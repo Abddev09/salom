@@ -33,6 +33,17 @@ const cleanHtmlForTelegram = (rawHtml) => {
         allowedAttributes: {
             a: ['href'],
         },
+        transformTags: {
+            strong: 'b',
+            em: 'i',
+            span: 'b',
+            h1: 'b',
+            h2: 'b',
+            h3: 'b',
+            h4: 'b',
+            h5: 'b',
+            h6: 'b',
+        },
         textFilter: (text) => text
             .replace(/ +/g, ' ') // ortiqcha bo‘sh joylar -> bitta
             .replace(/\n{3,}/g, '\n\n') // 3 yoki undan ortiq \n -> 2 ta
