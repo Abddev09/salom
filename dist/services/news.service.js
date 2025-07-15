@@ -24,18 +24,28 @@ const cleanHtmlForTelegram = (rawHtml) => {
     return (0, sanitize_html_1.default)(rawHtml, {
         allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
         allowedAttributes: {
-            a: ['href']
+            a: ['href'],
         },
         transformTags: {
+            strong: 'b',
+            em: 'i',
             h1: 'b',
             h2: 'b',
             h3: 'b',
             h4: 'b',
             h5: 'b',
             h6: 'b',
-            strong: 'b',
-            em: 'i',
-            p: 'br' // bu qator ajratadi
+            p: () => ({
+                tagName: 'span',
+                attribs: {},
+                text: '\n\n',
+            })
+        },
+        textFilter: (text) => {
+            return text
+                .replace(/<br\s*\/?>/gi, '\n') // HTMLdagi <br> ni \n ga almashtir
+                .replace(/ +/g, ' ') // ortiqcha probellarni tozalash
+                .replace(/\n{3,}/g, '\n\n'); // ortiqcha qatorlarni 2 ga qisqartirish
         }
     });
 };
