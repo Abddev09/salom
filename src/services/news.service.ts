@@ -1,12 +1,31 @@
-// src/services/news.service.ts
 import { News } from '../models/news.model'
 import fs from 'fs'
 import path from 'path'
 import { User } from '../models'
 import bot from '../bot'
-import { Op } from 'sequelize'
+import sanitizeHtml from 'sanitize-html'
 
 const uploadsDir = path.join(__dirname, '../../uploads')
+
+export const cleanHtmlForTelegram = (rawHtml: string): string => {
+  return sanitizeHtml(rawHtml, {
+    allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
+    allowedAttributes: {
+      a: ['href']
+    },
+    transformTags: {
+      h1: 'b',
+      h2: 'b',
+      h3: 'b',
+      h4: 'b',
+      h5: 'b',
+      h6: 'b',
+      strong: 'b',
+      em: 'i',
+      p: 'br' // bu qator ajratadi
+    }
+  })
+}
 
 export const createNewsService = async (content: string, image?: string) => {
   const news = await News.create({ content, image })
