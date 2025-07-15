@@ -18,7 +18,7 @@ app.use((0, helmet_1.default)());
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)());
-app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../uploads")));
+app.use("/uploads", (0, cors_1.default)(), express_1.default.static(path_1.default.join(__dirname, "../uploads")));
 //Routes
 app.use("/api", index_1.default);
 app.get("/", (req, res) => {
