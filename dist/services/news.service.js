@@ -21,9 +21,9 @@ const bot_1 = __importDefault(require("../bot"));
 const sanitize_html_1 = __importDefault(require("sanitize-html"));
 const uploadsDir = path_1.default.join(__dirname, '../../uploads');
 const cleanHtmlForTelegram = (rawHtml) => {
-    // HTML ni Telegram formatga tozalaymiz
+    // Step 1: Clean and transform HTML
     const cleaned = (0, sanitize_html_1.default)(rawHtml, {
-        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br'],
+        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'], // Telegramda ruxsat etilgan taglar
         allowedAttributes: {
             a: ['href'],
         },
@@ -36,19 +36,16 @@ const cleanHtmlForTelegram = (rawHtml) => {
             h4: 'b',
             h5: 'b',
             h6: 'b',
-        }
+        },
     });
-    // Sanitize qilingan HTML'dan keyin biz o‘zimiz \n larni qo‘shamiz
+    // Step 2: Add line breaks manually AFTER sanitize
     const prepared = cleaned
         .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<p>/gi, '\n')
-        .replace(/<\/p>/gi, '\n')
-        .replace(/<\/div>/gi, '\n')
-        .replace(/<\/h[1-6]>/gi, '\n')
+        .replace(/<\/?(p|div)>/gi, '\n')
+        .replace(/<\/b>\s*<b>/gi, '') // ketma-ket bold larni birlashtirish
         .replace(/&nbsp;/gi, ' ')
-        .replace(/<[^>]+>/g, '') // qolgan HTML taglarini olib tashlaymiz
-        .replace(/ +/g, ' ')
-        .replace(/\n{3,}/g, '\n\n') // ortiqcha \n larni tozalaymiz
+        .replace(/ {2,}/g, ' ') // ortiqcha bo'sh joylarni olib tashlash
+        .replace(/\n{3,}/g, '\n\n') // 3 va undan ortiq qator -> 2 ta
         .trim();
     return prepared;
 };
