@@ -43,10 +43,13 @@ export const createNewsService = async (content: string, image?: string) => {
       sentChatIds.add(chatId) // ✅ keyin qo‘shib qo‘y
       if (news.image) {
         const imagePath = path.join(uploadsDir, news.image)
-        if (fs.existsSync(imagePath)) {
-          await bot.sendPhoto(chatId, imagePath, { caption: messageText , parse_mode: "HTML", })
-          console.log(`✅ Telegramga yuborildi: ${chatId}`)
-        }
+if (fs.existsSync(imagePath)) {
+  await bot.sendPhoto(chatId, fs.createReadStream(imagePath), {
+    caption: cleanHtmlForTelegram(messageText),
+    parse_mode: "HTML",
+  })
+}
+
       }
     }
   } catch (err) {

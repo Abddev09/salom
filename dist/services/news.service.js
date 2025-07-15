@@ -54,8 +54,10 @@ const createNewsService = (content, image) => __awaiter(void 0, void 0, void 0, 
             if (news.image) {
                 const imagePath = path_1.default.join(uploadsDir, news.image);
                 if (fs_1.default.existsSync(imagePath)) {
-                    yield bot_1.default.sendPhoto(chatId, imagePath, { caption: messageText, parse_mode: "HTML", });
-                    console.log(`✅ Telegramga yuborildi: ${chatId}`);
+                    yield bot_1.default.sendPhoto(chatId, fs_1.default.createReadStream(imagePath), {
+                        caption: (0, exports.cleanHtmlForTelegram)(messageText),
+                        parse_mode: "HTML",
+                    });
                 }
             }
         }
