@@ -21,30 +21,22 @@ const bot_1 = __importDefault(require("../bot"));
 const sanitize_html_1 = __importDefault(require("sanitize-html"));
 const uploadsDir = path_1.default.join(__dirname, '../../uploads');
 const cleanHtmlForTelegram = (rawHtml) => {
-    return (0, sanitize_html_1.default)(rawHtml, {
-        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
+    const prepared = rawHtml
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/&nbsp;/gi, '\n')
+        .replace(/<p>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<div>/gi, '\n')
+        .replace(/<\/div>/gi, '\n');
+    return (0, sanitize_html_1.default)(prepared, {
+        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'], // faqat Telegramga ruxsat etilganlar
         allowedAttributes: {
             a: ['href'],
         },
-        transformTags: {
-            strong: 'b',
-            em: 'i',
-            h1: 'b',
-            h2: 'b',
-            h3: 'b',
-            h4: 'b',
-            h5: 'b',
-            h6: 'b',
-            p: 'span', // faqat span qilamiz, text yo‘qotilmaydi
-        },
-        textFilter: (text) => {
-            return text
-                .replace(/&nbsp;/g, '\n\n') // ✅ &nbsp ni \n\n ga aylantirish
-                .replace(/<br\s*\/?>/gi, '\n') // <br> ni ham \n ga
-                .replace(/ +/g, ' ') // ortiqcha probellarni tozalash
-                .replace(/\n{3,}/g, '\n\n') // 3+ qatorni 2 taga qisqartirish
-                .trim(); // bosh va oxiridagi bo‘sh joyni olib tashlash
-        }
+        textFilter: (text) => text
+            .replace(/ +/g, ' ') // ortiqcha bo‘sh joylar -> bitta
+            .replace(/\n{3,}/g, '\n\n') // 3 yoki undan ortiq \n -> 2 ta
+            .trim(),
     });
 };
 exports.cleanHtmlForTelegram = cleanHtmlForTelegram;
@@ -68,16 +60,15 @@ const createNewsService = (content, image) => __awaiter(void 0, void 0, void 0, 
             if (news.image) {
                 const imagePath = path_1.default.join(uploadsDir, news.image);
                 if (fs_1.default.existsSync(imagePath)) {
+                    console.log("📸 Sending image from:", imagePath);
                     yield bot_1.default.sendPhoto(chatId, fs_1.default.createReadStream(imagePath), {
-                        caption: (0, exports.cleanHtmlForTelegram)(messageText),
+                        caption: (0, exports.cleanHtmlForTelegram)(news.content),
                         parse_mode: "HTML",
                     });
                 }
-            }
-            else {
-                yield bot_1.default.sendMessage(chatId, (0, exports.cleanHtmlForTelegram)(messageText), {
-                    parse_mode: "HTML",
-                });
+                else {
+                    console.warn("⚠️ Image topilmadi:", imagePath);
+                }
             }
         }
     }

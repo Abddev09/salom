@@ -7,31 +7,27 @@ import sanitizeHtml from 'sanitize-html'
 
 const uploadsDir = path.join(__dirname, '../../uploads')
 
+
+
 export const cleanHtmlForTelegram = (rawHtml: string): string => {
-  return sanitizeHtml(rawHtml, {
-    allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
+  const prepared = rawHtml
+    .replace(/<br\s*\/?>/gi, '\n')        
+    .replace(/&nbsp;/gi, '\n')         
+    .replace(/<p>/gi, '\n')                
+    .replace(/<\/p>/gi, '\n')          
+    .replace(/<div>/gi, '\n')            
+    .replace(/<\/div>/gi, '\n')        
+
+  return sanitizeHtml(prepared, {
+    allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'], // faqat Telegramga ruxsat etilganlar
     allowedAttributes: {
       a: ['href'],
     },
-    transformTags: {
-      strong: 'b',
-      em: 'i',
-      h1: 'b',
-      h2: 'b',
-      h3: 'b',
-      h4: 'b',
-      h5: 'b',
-      h6: 'b',
-      p: 'span', // faqat span qilamiz, text yo‘qotilmaydi
-    },
-    textFilter: (text) => {
-      return text
-        .replace(/&nbsp;/g, '\n\n')         // ✅ &nbsp ni \n\n ga aylantirish
-        .replace(/<br\s*\/?>/gi, '\n')      // <br> ni ham \n ga
-        .replace(/ +/g, ' ')                // ortiqcha probellarni tozalash
-        .replace(/\n{3,}/g, '\n\n')         // 3+ qatorni 2 taga qisqartirish
-        .trim()                             // bosh va oxiridagi bo‘sh joyni olib tashlash
-    }
+    textFilter: (text) =>
+      text
+        .replace(/ +/g, ' ')             // ortiqcha bo‘sh joylar -> bitta
+        .replace(/\n{3,}/g, '\n\n')      // 3 yoki undan ortiq \n -> 2 ta
+        .trim(),
   })
 }
 
@@ -58,19 +54,20 @@ export const createNewsService = async (content: string, image?: string) => {
 
       sentChatIds.add(chatId)
 
-      if (news.image) {
-        const imagePath = path.join(uploadsDir, news.image)
-        if (fs.existsSync(imagePath)) {
-          await bot.sendPhoto(chatId, fs.createReadStream(imagePath), {
-            caption: cleanHtmlForTelegram(messageText),
-            parse_mode: "HTML",
-          })
-        }
-      } else {
-        await bot.sendMessage(chatId, cleanHtmlForTelegram(messageText), {
-          parse_mode: "HTML",
-        })
-      }
+     if (news.image) {
+  const imagePath = path.join(uploadsDir, news.image)
+
+  if (fs.existsSync(imagePath)) {
+    console.log("📸 Sending image from:", imagePath)
+
+    await bot.sendPhoto(chatId, fs.createReadStream(imagePath), {
+  caption: cleanHtmlForTelegram(news.content),
+  parse_mode: "HTML",
+})
+  } else {
+    console.warn("⚠️ Image topilmadi:", imagePath)
+  }
+}
     }
   } catch (err) {
     console.error("❌ Telegramga yuborishda xatolik:", err)
