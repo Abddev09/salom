@@ -8,35 +8,42 @@ import sanitizeHtml from 'sanitize-html'
 const uploadsDir = path.join(__dirname, '../../uploads')
 
 
-export const cleanHtmlForTelegram = (rawHtml: string): string => {
-  const prepared = rawHtml
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&nbsp;/gi, '\n')
-    .replace(/<p>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<div>/gi, '\n')
-    .replace(/<\/div>/gi, '\n')
-    .replace(/<h[1-6]>/gi, '<b>')
-    .replace(/<\/h[1-6]>/gi, '</b>\n') // headingdan keyin yangi qator
-    .replace(/<strong>/gi, '<b>')
-    .replace(/<\/strong>/gi, '</b>\n') // bolddan keyin yangi qator
-    .replace(/<em>/gi, '<i>')
-    .replace(/<\/em>/gi, '</i>\n')     // italicdan keyin yangi qator
-    .replace(/<span[^>]*>/gi, '')
-    .replace(/<\/span>/gi, '')
 
-  return sanitizeHtml(prepared, {
-    allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
-    allowedAttributes: {
-      a: ['href'],
-    },
-    textFilter: (text) =>
-      text
-        .replace(/ +/g, ' ')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim(),
-  })
+export const cleanHtmlForTelegram = (rawHtml: string): string => {
+  const decoded = rawHtml.replace(/\\n/g, '\n')
+
+  const lines = decoded
+    .split('\n')
+    .map(line => {
+      const prepared = line
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/<p[^>]*>/gi, '')
+        .replace(/<\/p>/gi, '')
+        .replace(/<div[^>]*>/gi, '')
+        .replace(/<\/div>/gi, '')
+        .replace(/<h[1-6][^>]*>/gi, '<b>')
+        .replace(/<\/h[1-6]>/gi, '</b>')
+        .replace(/<strong>/gi, '<b>')
+        .replace(/<\/strong>/gi, '</b>')
+        .replace(/<em>/gi, '<i>')
+        .replace(/<\/em>/gi, '</i>')
+        .replace(/<span[^>]*>/gi, '')
+        .replace(/<\/span>/gi, '')
+
+      return sanitizeHtml(prepared, {
+        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
+        allowedAttributes: {
+          a: ['href'],
+        },
+      }).trim()
+    })
+    .filter(line => line.length > 0) // ❗️ faqat meaningful qatorlar
+
+  return lines.join('\n\n') // 2 ta \n bo‘sh qator orasiga
 }
+
+
 
 
 
