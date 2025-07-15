@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "outDir": "dist",         // chiqish fayllari dist/ga tushadi
+    "rootDir": "src",         // faqat src/ ichidagi fayllarni ko‘rayapti
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"],         // faqat src ni compile qil
+  "exclude": ["node_modules", "dist"]
+}
