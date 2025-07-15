@@ -12,13 +12,15 @@ import path from "path";
 dotenv.config()
 const app = express();
 
-app.use(helmet())
+app.use(helmet({
+  crossOriginResourcePolicy: false
+}))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(cors())
 
-app.use("/uploads", cors(), express.static(path.join(__dirname, "../uploads")))
-//Routes
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")))
+//Route
 app.use("/api",router)
 
 
