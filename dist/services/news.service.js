@@ -21,34 +21,36 @@ const bot_1 = __importDefault(require("../bot"));
 const sanitize_html_1 = __importDefault(require("sanitize-html"));
 const uploadsDir = path_1.default.join(__dirname, '../../uploads');
 const cleanHtmlForTelegram = (rawHtml) => {
-    const decoded = rawHtml.replace(/\\n/g, '\n');
-    const lines = decoded
-        .split('\n')
-        .map(line => {
-        const prepared = line
-            .replace(/<br\s*\/?>/gi, '\n')
-            .replace(/&nbsp;/gi, ' ')
-            .replace(/<p[^>]*>/gi, '')
-            .replace(/<\/p>/gi, '')
-            .replace(/<div[^>]*>/gi, '')
-            .replace(/<\/div>/gi, '')
-            .replace(/<h[1-6][^>]*>/gi, '<b>')
-            .replace(/<\/h[1-6]>/gi, '</b>')
-            .replace(/<strong>/gi, '<b>')
-            .replace(/<\/strong>/gi, '</b>')
-            .replace(/<em>/gi, '<i>')
-            .replace(/<\/em>/gi, '</i>')
-            .replace(/<span[^>]*>/gi, '')
-            .replace(/<\/span>/gi, '');
-        return (0, sanitize_html_1.default)(prepared, {
-            allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
-            allowedAttributes: {
-                a: ['href'],
-            },
-        }).trim();
-    })
-        .filter(line => line.length > 0); // ❗️ faqat meaningful qatorlar
-    return lines.join('\n\n'); // 2 ta \n bo‘sh qator orasiga
+    // HTML ni Telegram formatga tozalaymiz
+    const cleaned = (0, sanitize_html_1.default)(rawHtml, {
+        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br'],
+        allowedAttributes: {
+            a: ['href'],
+        },
+        transformTags: {
+            strong: 'b',
+            em: 'i',
+            h1: 'b',
+            h2: 'b',
+            h3: 'b',
+            h4: 'b',
+            h5: 'b',
+            h6: 'b',
+        }
+    });
+    // Sanitize qilingan HTML'dan keyin biz o‘zimiz \n larni qo‘shamiz
+    const prepared = cleaned
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<p>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<\/h[1-6]>/gi, '\n')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/<[^>]+>/g, '') // qolgan HTML taglarini olib tashlaymiz
+        .replace(/ +/g, ' ')
+        .replace(/\n{3,}/g, '\n\n') // ortiqcha \n larni tozalaymiz
+        .trim();
+    return prepared;
 };
 exports.cleanHtmlForTelegram = cleanHtmlForTelegram;
 const createNewsService = (content, image) => __awaiter(void 0, void 0, void 0, function* () {

@@ -8,40 +8,41 @@ import sanitizeHtml from 'sanitize-html'
 const uploadsDir = path.join(__dirname, '../../uploads')
 
 
-
 export const cleanHtmlForTelegram = (rawHtml: string): string => {
-  const decoded = rawHtml.replace(/\\n/g, '\n')
+  // HTML ni Telegram formatga tozalaymiz
+  const cleaned = sanitizeHtml(rawHtml, {
+    allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br'],
+    allowedAttributes: {
+      a: ['href'],
+    },
+    transformTags: {
+      strong: 'b',
+      em: 'i',
+      h1: 'b',
+      h2: 'b',
+      h3: 'b',
+      h4: 'b',
+      h5: 'b',
+      h6: 'b',
+    }
+  })
 
-  const lines = decoded
-    .split('\n')
-    .map(line => {
-      const prepared = line
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/<p[^>]*>/gi, '')
-        .replace(/<\/p>/gi, '')
-        .replace(/<div[^>]*>/gi, '')
-        .replace(/<\/div>/gi, '')
-        .replace(/<h[1-6][^>]*>/gi, '<b>')
-        .replace(/<\/h[1-6]>/gi, '</b>')
-        .replace(/<strong>/gi, '<b>')
-        .replace(/<\/strong>/gi, '</b>')
-        .replace(/<em>/gi, '<i>')
-        .replace(/<\/em>/gi, '</i>')
-        .replace(/<span[^>]*>/gi, '')
-        .replace(/<\/span>/gi, '')
+  // Sanitize qilingan HTML'dan keyin biz o‘zimiz \n larni qo‘shamiz
+  const prepared = cleaned
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<p>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/<[^>]+>/g, '') // qolgan HTML taglarini olib tashlaymiz
+    .replace(/ +/g, ' ')
+    .replace(/\n{3,}/g, '\n\n') // ortiqcha \n larni tozalaymiz
+    .trim()
 
-      return sanitizeHtml(prepared, {
-        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
-        allowedAttributes: {
-          a: ['href'],
-        },
-      }).trim()
-    })
-    .filter(line => line.length > 0) // ❗️ faqat meaningful qatorlar
-
-  return lines.join('\n\n') // 2 ta \n bo‘sh qator orasiga
+  return prepared
 }
+
 
 
 
