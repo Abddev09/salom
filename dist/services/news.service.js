@@ -27,29 +27,23 @@ const cleanHtmlForTelegram = (rawHtml) => {
         .replace(/<p>/gi, '\n')
         .replace(/<\/p>/gi, '\n')
         .replace(/<div>/gi, '\n')
-        .replace(/<\/div>/gi, '\n');
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<h[1-6]>/gi, '<b>')
+        .replace(/<\/h[1-6]>/gi, '</b>')
+        .replace(/<strong>/gi, '<b>')
+        .replace(/<\/strong>/gi, '</b>')
+        .replace(/<em>/gi, '<i>')
+        .replace(/<\/em>/gi, '</i>')
+        .replace(/<span[^>]*>/gi, '') // <span> tagini butunlay o‘chirish
+        .replace(/<\/span>/gi, ''); // </span> yopuvchini ham o‘chirish
     return (0, sanitize_html_1.default)(prepared, {
-        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'], // faqat Telegram ruxsat etganlar
+        allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
         allowedAttributes: {
             a: ['href'],
         },
-        transformTags: {
-            strong: 'b',
-            em: 'i',
-            span: '\n',
-            h1: 'b',
-            h2: 'b',
-            h3: 'b',
-            h4: 'b',
-            h5: 'b',
-            h6: 'b',
-            // Optional: <p> yoki <div> ni <b> ga aylantirish (agar yuqorida replace ishlamasa)
-            p: '\n',
-            div: '\n',
-        },
         textFilter: (text) => text
-            .replace(/ +/g, ' ')
-            .replace(/\n{3,}/g, '\n\n')
+            .replace(/ +/g, ' ') // ortiqcha bo‘sh joy -> bitta
+            .replace(/\n{3,}/g, '\n\n') // 3 yoki ko‘p \n -> 2 ta
             .trim(),
     });
 };
