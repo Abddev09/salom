@@ -29,21 +29,21 @@ const cleanHtmlForTelegram = (rawHtml) => {
         .replace(/<div>/gi, '\n')
         .replace(/<\/div>/gi, '\n')
         .replace(/<h[1-6]>/gi, '<b>')
-        .replace(/<\/h[1-6]>/gi, '</b>')
+        .replace(/<\/h[1-6]>/gi, '</b>\n') // headingdan keyin yangi qator
         .replace(/<strong>/gi, '<b>')
-        .replace(/<\/strong>/gi, '</b>')
+        .replace(/<\/strong>/gi, '</b>\n') // bolddan keyin yangi qator
         .replace(/<em>/gi, '<i>')
-        .replace(/<\/em>/gi, '</i>')
-        .replace(/<span[^>]*>/gi, '') // <span> tagini butunlay o‘chirish
-        .replace(/<\/span>/gi, ''); // </span> yopuvchini ham o‘chirish
+        .replace(/<\/em>/gi, '</i>\n') // italicdan keyin yangi qator
+        .replace(/<span[^>]*>/gi, '')
+        .replace(/<\/span>/gi, '');
     return (0, sanitize_html_1.default)(prepared, {
         allowedTags: ['b', 'i', 'u', 's', 'a', 'code', 'pre'],
         allowedAttributes: {
             a: ['href'],
         },
         textFilter: (text) => text
-            .replace(/ +/g, ' ') // ortiqcha bo‘sh joy -> bitta
-            .replace(/\n{3,}/g, '\n\n') // 3 yoki ko‘p \n -> 2 ta
+            .replace(/ +/g, ' ')
+            .replace(/\n{3,}/g, '\n\n')
             .trim(),
     });
 };
