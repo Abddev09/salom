@@ -14,12 +14,14 @@ const models_1 = require("./models");
 const path_1 = __importDefault(require("path"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: false
+}));
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)());
-app.use("/uploads", (0, cors_1.default)(), express_1.default.static(path_1.default.join(__dirname, "../uploads")));
-//Routes
+app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../uploads")));
+//Route
 app.use("/api", index_1.default);
 app.get("/", (req, res) => {
     res.send("Usat register api");
